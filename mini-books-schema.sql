@@ -39,16 +39,9 @@ CREATE TABLE IF NOT EXISTS `mini_books_schema`.`user` (
   `name` VARCHAR(100) NOT NULL,
   `email` VARCHAR(100) NOT NULL,
   `password_hash` VARCHAR(225) NOT NULL,
-  `household_id` INT NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `iduser_UNIQUE` (`id` ASC) VISIBLE,
-  UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE,
-  INDEX `fk_user_household_idx` (`household_id` ASC) VISIBLE,
-  CONSTRAINT `fk_user_household`
-    FOREIGN KEY (`household_id`)
-    REFERENCES `mini_books_schema`.`household` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+  UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE)
 ENGINE = InnoDB;
 
 
@@ -71,15 +64,20 @@ ENGINE = InnoDB;
 -- Table `mini_books_schema`.`report`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mini_books_schema`.`report` (
-  `idreport` INT NOT NULL AUTO_INCREMENT,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `private` TINYINT NOT NULL,
+  `report_parameter_id` INT NOT NULL,
   `household_id` INT NOT NULL,
   `user_id` INT NOT NULL,
-  `report_parameter_id` INT NOT NULL,
-  PRIMARY KEY (`idreport`),
+  PRIMARY KEY (`id`),
+  INDEX `fk_report_report_parameter1_idx` (`report_parameter_id` ASC) VISIBLE,
   INDEX `fk_report_household1_idx` (`household_id` ASC) VISIBLE,
   INDEX `fk_report_user1_idx` (`user_id` ASC) VISIBLE,
-  INDEX `fk_report_report_parameter1_idx` (`report_parameter_id` ASC) VISIBLE,
+  CONSTRAINT `fk_report_report_parameter1`
+    FOREIGN KEY (`report_parameter_id`)
+    REFERENCES `mini_books_schema`.`report_parameter` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
   CONSTRAINT `fk_report_household1`
     FOREIGN KEY (`household_id`)
     REFERENCES `mini_books_schema`.`household` (`id`)
@@ -89,11 +87,6 @@ CREATE TABLE IF NOT EXISTS `mini_books_schema`.`report` (
     FOREIGN KEY (`user_id`)
     REFERENCES `mini_books_schema`.`user` (`id`)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_report_report_parameter1`
-    FOREIGN KEY (`report_parameter_id`)
-    REFERENCES `mini_books_schema`.`report_parameter` (`id`)
-    ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
@@ -102,25 +95,67 @@ ENGINE = InnoDB;
 -- Table `mini_books_schema`.`transaction`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mini_books_schema`.`transaction` (
-  `idtransaction` INT NOT NULL AUTO_INCREMENT,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(100) NOT NULL,
   `timestamp` DATETIME NOT NULL,
   `description` VARCHAR(100) NOT NULL,
   `amount` DOUBLE NOT NULL,
   `type` VARCHAR(45) NOT NULL,
   `household_id` INT NOT NULL,
-  `report_id` INT NOT NULL,
-  PRIMARY KEY (`idtransaction`),
+  `user_id` INT NOT NULL,
+  PRIMARY KEY (`id`),
   INDEX `fk_transaction_household1_idx` (`household_id` ASC) VISIBLE,
-  INDEX `fk_transaction_report1_idx` (`report_id` ASC) VISIBLE,
+  INDEX `fk_transaction_user1_idx` (`user_id` ASC) VISIBLE,
   CONSTRAINT `fk_transaction_household1`
     FOREIGN KEY (`household_id`)
     REFERENCES `mini_books_schema`.`household` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_transaction_report1`
+  CONSTRAINT `fk_transaction_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `mini_books_schema`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mini_books_schema`.`household_user`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mini_books_schema`.`household_user` (
+  `household_id` INT NOT NULL,
+  `user_id` INT NOT NULL,
+  INDEX `fk_household_user_household1_idx` (`household_id` ASC) VISIBLE,
+  INDEX `fk_household_user_user1_idx` (`user_id` ASC) VISIBLE,
+  CONSTRAINT `fk_household_user_household1`
+    FOREIGN KEY (`household_id`)
+    REFERENCES `mini_books_schema`.`household` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_household_user_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `mini_books_schema`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mini_books_schema`.`transaction_report`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mini_books_schema`.`transaction_report` (
+  `transaction_id` INT NOT NULL,
+  `report_id` INT NOT NULL,
+  INDEX `fk_transaction_report_transaction1_idx` (`transaction_id` ASC) VISIBLE,
+  INDEX `fk_transaction_report_report1_idx` (`report_id` ASC) VISIBLE,
+  CONSTRAINT `fk_transaction_report_transaction1`
+    FOREIGN KEY (`transaction_id`)
+    REFERENCES `mini_books_schema`.`transaction` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_transaction_report_report1`
     FOREIGN KEY (`report_id`)
-    REFERENCES `mini_books_schema`.`report` (`idreport`)
+    REFERENCES `mini_books_schema`.`report` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
